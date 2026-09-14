@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Heidi's Songbook — Full Playlist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Archivo:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Archivo', sans-serif;
+    background: #0a0a0b;
+    color: #e6e8e9;
+    min-height: 100vh;
+  }
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+  }
+  header h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 24px;
+    margin: 0 0 4px;
+  }
+  header p {
+    margin: 0 0 24px;
+    font-size: 13px;
+    color: #8a8f93;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  @media (min-width: 860px) {
+    .layout { grid-template-columns: 1.4fr 1fr; }
+  }
+  .player-card {
+    background: #131315;
+    border-radius: 8px;
+    padding: 18px;
+    border: 1px solid #232427;
+  }
+  .now-playing-num {
+    font-size: 12px;
+    color: #d9b25c;
+    letter-spacing: 0.02em;
+  }
+  .now-playing-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 22px;
+    margin: 2px 0 14px;
+  }
+  .video-frame {
+    position: relative;
+    width: 100%;
+    padding-top: 100%; /* square, matches the clip format */
+    border-radius: 6px;
+    overflow: hidden;
+    background: #000;
+  }
+  .video-frame iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  .controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 14px;
+    gap: 10px;
+  }
+  .nav-btn {
+    flex: 1;
+    background: #1c1d20;
+    border: 1px solid #2c2d30;
+    color: #e6e8e9;
+    font-family: 'Archivo', sans-serif;
+    font-size: 14px;
+    padding: 12px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .nav-btn:hover { background: #26272b; }
+  .nav-btn:disabled { opacity: 0.35; cursor: default; }
+  .nav-btn.next { text-align: right; }
+  .nav-btn.prev { text-align: left; }
+  .open-drive {
+    display: inline-block;
+    margin-top: 12px;
+    font-size: 12px;
+    color: #8a8f93;
+    text-decoration: none;
+  }
+  .open-drive:hover { color: #d9b25c; }
+
+  .list-card {
+    background: #131315;
+    border-radius: 8px;
+    border: 1px solid #232427;
+    max-height: 640px;
+    overflow-y: auto;
+  }
+  .song-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid #1c1d20;
+    font-size: 14px;
+  }
+  .song-row:last-child { border-bottom: none; }
+  .song-row:hover { background: #1a1b1e; }
+  .song-row.active { background: #1e1a10; }
+  .song-row .idx {
+    font-family: 'Archivo', sans-serif;
+    font-size: 12px;
+    color: #6d7276;
+    width: 26px;
+    flex-shrink: 0;
+  }
+  .song-row.active .idx { color: #d9b25c; }
+  .song-row .name { color: #d3d6d8; }
+  .song-row.active .name { color: #f4efe6; font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Heidi's Songbook</h1>
+    <p>50 songs, in order — tap any title to jump, or use Prev / Next.</p>
+  </header>
+
+  <div class="layout">
+    <div class="player-card">
+      <div class="now-playing-num" id="npNum"></div>
+      <div class="now-playing-title" id="npTitle"></div>
+      <div class="video-frame">
+        <iframe id="player" src="" allow="autoplay" allowfullscreen></iframe>
+      </div>
+      <div class="controls">
+        <button class="nav-btn prev" id="prevBtn">&larr; Previous</button>
+        <button class="nav-btn next" id="nextBtn">Next &rarr;</button>
+      </div>
+      <a class="open-drive" id="openDrive" href="#" target="_blank" rel="noopener">Open this clip in Google Drive &#8599;</a>
+    </div>
+
+    <div class="list-card" id="list"></div>
+  </div>
+</div>
+
+<script>
+const SONGS = [
+  {n:1,  title:"HEIDI", id:"10rzVEFB_XzWAj9kptKKyb5-A55KFc5sM"},
+  {n:2,  title:"Read Head Reggae", id:"11exAGTPJvxdgD3t-JDo_PCSjiJudZzlA"},
+  {n:3,  title:"Rainbow", id:"1rKTG5IYJhC9GVFxNTIQjR9oy6qfiMfoD"},
+  {n:4,  title:"I Don\u2019t Know", id:"1KqhOUm-MhXfpx9U0y0KU80NrkTf0DhmS"},
+  {n:5,  title:"Superman", id:"1abbxmLHNyZTljynDYtpN4t_CjTsUAN0J"},
+  {n:6,  title:"Bird In The Sky", id:"1xSy-NoeeTdYX3Rz-aQtcLKcUwQy0VI7J"},
+  {n:7,  title:"Gotta Dance To Rock", id:"1lXODY_BryggPW3TpwjJ21XtLUH31F0ZF"},
+  {n:8,  title:"Live The Old Times Again", id:"1UIr6pWw3xBdqg0kNj8L2pdAUDTcEmZVf"},
+  {n:9,  title:"I Know", id:"11MA62SvV_S2YxKQtakSBofUFYIcO0Dz-"},
+  {n:10, title:"Sonne", id:"17a3HPgql7MesIyK8UTBMKZA0D0tBWsg3"},
+  {n:11, title:"1st Love", id:"1-OsjI2XLQIq_Xwz4QOD3hovtHVBSBjjQ"},
+  {n:12, title:"You\u2019re Gone!", id:"1EMUlSmCx-Ih4Ki3_1ILMvUexOUnirFSX"},
+  {n:13, title:"Go!", id:"1FOmYnfvcErkDKbunkwLI5pFgJXyiaMAk"},
+  {n:14, title:"V Luv U", id:"1jU7UxCVPy-VkYo2Mkkgam3MluIaz1ifA"},
+  {n:15, title:"Walk Away", id:"1iZ-9waDNuXe_Y8mVLOpkemik4AN9AohY"},
+  {n:16, title:"Living In The Moment", id:"1bLEdhzaHq-Zqa2WfvXmSCOrk_9LkrEcS"},
+  {n:17, title:"Maybe Tomorrow", id:"17jaSPDjGDhvMZMi6Yn9f9llAp9OqfaE6"},
+  {n:18, title:"We Go On!", id:"1u4OlhKwhluLX6nVVYbYjZ7MOHskdMhNF"},
+  {n:19, title:"What They Say", id:"1dWy3Gdo89le-t5yklVPk4rslsjU4GkYv"},
+  {n:20, title:"Velvet Afterglow", id:"1m1gbKodBlxKc-4NWZ_N4vTsyhXWAWifm"},
+  {n:21, title:"Velvet Afterglow (Reggae)", id:"171WmGIGTswCenPb0vWf0nSotBWcAmRQX"},
+  {n:22, title:"What\u2019s This Song!", id:"1z2cBKTrZaFzX8ii9gz-WrOzttaoMnziM"},
+  {n:23, title:"Give Me Summer!", id:"1pBl4f2fLYo4vBj_DuazAiiRpwfIUaMG0"},
+  {n:24, title:"Pretty Little Mess", id:"1RoHRna8NFbs75z2jea66NuUcxVfbpC7H"},
+  {n:25, title:"Turning Water Into Wine", id:"1V-_arbJ_G5fU0xDtVtSdvst4WqT9mQjm"},
+  {n:26, title:"Stop Dreaming", id:"1n1DKTfUpnSuUYnL6HYgIkEEfpo7D-r4V"},
+  {n:27, title:"Where Sunflowers Don\u2019t Grow", id:"1r73BU45JrgENHTvG3I3hb4mPtc_hGYvs"},
+  {n:28, title:"Sleeping In The Sunshine", id:"1PQw2pyFA_870qulzLORenJSsMeiNPgUC"},
+  {n:29, title:"Darling Has Come", id:"1E9Uh4K2hqelgVDZVmPH0ZV5lH94WRiOv"},
+  {n:30, title:"Aadarei", id:"1hUTnSImfrWzX1ITicWRT5-hBa2epBytj"},
+  {n:31, title:"Island Time", id:"1JV0Q6QCEzuoPwx21ZxqoU-mu3cdlQrJX"},
+  {n:32, title:"Sri Lanka, You Shine", id:"1izHqpNcHisIFUy5lfaPijc0Kq7akkgpz"},
+  {n:33, title:"Under The Mango Tree", id:"195TVIwxMqkj-yQ6j8sKXu74icBmr6sI0"},
+  {n:34, title:"Eighty Countries and Counting", id:"1HslQ58Tc64Wteob9c5kuT29I_kGNMwsz"},
+  {n:35, title:"Hoiya Hoiya", id:"1VbAquRMD9fpo0zyXy-yk-1CkOs3bCjJo"},
+  {n:36, title:"Wasting My Time", id:"1-ddW2wjwvusRfC8yBF_UX1IyImoEMm4-"},
+  {n:37, title:"In The Candlelight", id:"1CtL527aA8QW7gwjH7CYqo_vymjGIew8A"},
+  {n:38, title:"There\u2019s a Place", id:"1lurtSj6qDZ5V-aMaUMPnBEuOBb1Q3xNE"},
+  {n:39, title:"Out Of Nowhere", id:"1efBFDE2mykclERN-WhFuk2m7ocdaTHn3"},
+  {n:40, title:"Happy Hit Record", id:"1ZjrR3G6eCRYZtUfkzi8gqGP240XSwvnn"},
+  {n:41, title:"He\u2019s Around", id:"1dy7ffDf2JxZQSV0IbZvt2iCTtSumVr1E"},
+  {n:42, title:"Sri Lanka", id:"1sZZji6Wbx5Atj3ubNQE1xddLom6FZNXG"},
+  {n:43, title:"My Tru Luv", id:"1bBoXYASsAi8nZjplioUSsghTKXADitH1"},
+  {n:44, title:"The Road Of Life", id:"13TV6SjHxuO4vTui6QiFJfHqeSxikehCT"},
+  {n:45, title:"Empty Room", id:"1MWr1sQoPRfaK1CByHKAZLDBM1ULD1unB"},
+  {n:46, title:"Too Late", id:"1-kqWcpbLJvRtZb5mev54ChCqYuPNf5FX"},
+  {n:47, title:"A Love Song, Thru and Thru", id:"1DvT0WUbGpAc_kBx63L-dwdGYhQ83SYbz"},
+  {n:48, title:"(I want to) Eat U Up!", id:"1VJVn8I5PXx53Iozyk4RJzACKKnNYSvbD"},
+  {n:49, title:"So Long, Bye Bye", id:"1npBMvmKUFN5_tTNqyNDlKudRGV-H4iJs"},
+  {n:50, title:"Coconuts From Sri Lanka", id:"1Uxr6TzQ_zgcCjfNNZT_98pGELrg-pI41"}
+];
+
+let current = 0;
+
+const player = document.getElementById("player");
+const npNum = document.getElementById("npNum");
+const npTitle = document.getElementById("npTitle");
+const openDrive = document.getElementById("openDrive");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
+const list = document.getElementById("list");
+
+function renderList() {
+  list.innerHTML = "";
+  SONGS.forEach((song, i) => {
+    const row = document.createElement("div");
+    row.className = "song-row" + (i === current ? " active" : "");
+    row.innerHTML = `<span class="idx">${String(song.n).padStart(2, "0")}</span><span class="name"></span>`;
+    row.querySelector(".name").textContent = song.title;
+    row.addEventListener("click", () => loadSong(i));
+    list.appendChild(row);
+  });
+}
+
+function loadSong(i) {
+  current = i;
+  const song = SONGS[i];
+  player.src = `https://drive.google.com/file/d/${song.id}/preview`;
+  npNum.textContent = `No. ${String(song.n).padStart(2, "0")}`;
+  npTitle.textContent = song.title;
+  openDrive.href = `https://drive.google.com/file/d/${song.id}/view`;
+  prevBtn.disabled = i === 0;
+  nextBtn.disabled = i === SONGS.length - 1;
+  renderList();
+  const activeRow = list.querySelector(".song-row.active");
+  if (activeRow) activeRow.scrollIntoView({ block: "nearest" });
+}
+
+prevBtn.addEventListener("click", () => { if (current > 0) loadSong(current - 1); });
+nextBtn.addEventListener("click", () => { if (current < SONGS.length - 1) loadSong(current + 1); });
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowRight") nextBtn.click();
+  if (e.key === "ArrowLeft") prevBtn.click();
+});
+
+loadSong(0);
+</script>
+</body>
+</html>
